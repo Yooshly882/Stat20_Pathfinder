@@ -1,25 +1,35 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -27,6 +37,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class GUI extends Application {
 	// newChar is the object that saves all information in real time, without needing to be passed from method to method.
@@ -83,11 +100,11 @@ public class GUI extends Application {
 		// These include the Races: Dwarf, Elf, Gnome, Half-Elf, Half-Orc, Halfling, and Human, and
 		// the Classes: Barbarian, Bard, Cleric, Druid, Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, and Wizard.
 		ComboBox<String> cbRace = new ComboBox<String>();
-			cbRace.getItems().addAll("Dwarf", "Elf", "Human");
-			cbRace.setVisibleRowCount(3);
+			cbRace.getItems().addAll("Dwarf", "Elf", "Gnome", "Half-Elf", "Half-Orc", "Halfling", "Human");
+			cbRace.setVisibleRowCount(5);
 		ComboBox<String> cbClass = new ComboBox<String>();
-			cbClass.getItems().addAll("Alchemist","Bard", "Paladin");
-			cbClass.setVisibleRowCount(3);
+			cbClass.getItems().addAll("Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Wizard");
+			cbClass.setVisibleRowCount(5);
 		HBox hbRaceClass = new HBox(20, new Label("Race"), cbRace, new Label("Class"), cbClass);
 
 		// Textarea for race.
@@ -232,7 +249,7 @@ public class GUI extends Application {
 		vbBaseStats.setAlignment(Pos.CENTER);
 
 		VBox vbThird = new VBox(vbBaseStats);
-		// Last column elements: Saving Throws, BAB, CMB, CMD, etc.
+		/// Last column elements: Saving Throws, BAB, CMB, CMD, etc.
 
 		// Bottom Elements: Back and Reset buttons.
 		Button bBack = new Button("Back");
@@ -267,10 +284,25 @@ public class GUI extends Application {
 	    		newChar.cRace.raceName = cbRace.getValue();
 	    		newChar.cClass.className = cbClass.getValue();
 	    		newChar.alignment = lLaw.getText() + lMoral.getText();
+	    		//THERE IS A PROBLEM RIGHT HERE THAT CRASHES MY MOVEMENT TO THE NEXT STAGE
+	    		/*
 	    		newChar.age = Integer.parseInt(tfAge.getText());
 	    		newChar.height = Integer.parseInt(tfHeight.getText());
 	    		newChar.weight = Integer.parseInt(tfWeight.getText());
-	    		createNew2Of5(currentStage);
+	    		*/
+	    		newChar.strength = Integer.parseInt(tfStr.getText());
+	    		newChar.dexterity = Integer.parseInt(tfDex.getText());
+	    		newChar.constitution = Integer.parseInt(tfCon.getText());
+	    		newChar.intelligence = Integer.parseInt(tfInt.getText());
+	    		newChar.wisdom = Integer.parseInt(tfWis.getText());
+	    		newChar.charisma = Integer.parseInt(tfCha.getText());
+
+	    		try {
+					createNew2Of5(currentStage);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 	    	}
 	    });
 	    rbMale.setOnAction(new EventHandler<ActionEvent>() {
@@ -336,15 +368,8 @@ public class GUI extends Application {
 	    cbClass.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 	    	public void handle(ActionEvent e) {
-	    		if (cbClass.getValue() == "Alchemist") {
-	    			newChar.cClass.setClass("Alchemist");
-	    			taClassText.setText(newChar.cClass.getClassBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
+	    		if (cbClass.getValue() == "Barbarian") {
+	    			newChar.cClass.setClass("Barbarian");
 	    		}
 	    		else if (cbClass.getValue() == "Bard") {
 	    			newChar.cClass.setClass("Bard");
@@ -389,36 +414,254 @@ public class GUI extends Application {
 				tfWeight.setText(Integer.toString(newChar.weight));
 			}
 	    });
+	    bRollBaseStats.setOnAction(new EventHandler<ActionEvent>() {
+	    	@Override
+	    	public void handle (ActionEvent e) {
+	    		tfStr.setText(Integer.toString(newChar.rollBaseStats()));
+	    		tfDex.setText(Integer.toString(newChar.rollBaseStats()));
+	    		tfCon.setText(Integer.toString(newChar.rollBaseStats()));
+	    		tfInt.setText(Integer.toString(newChar.rollBaseStats()));
+	    		tfWis.setText(Integer.toString(newChar.rollBaseStats()));
+	    		tfCha.setText(Integer.toString(newChar.rollBaseStats()));
+	    	}
+	    });
 	}
 	//And this concludes the first stage.
 
 	//Second Stage is about Skills, Feats, and Traits.
-	private void createNew2Of5(Stage previousStage) {
-		// Firstly, the skills list.
+	private void createNew2Of5(Stage previousStage) throws IOException {
+		// Close the previous stage, in preparation for the next.
+		previousStage.close();
 
-		// Secondly, Feats: each character starts with at least one Feat, but may get an additional feat by
-		// being of the Human Race (2), Fighter Class (2), or both (3).
+		// Firstly, the skills list.
+		// At the top should be a centered header, "Welcome, [character name], the brave [race][class]!
+		// Then there should be a dynamic ticker that keeps track of how many class skills (and feats) the player has left to select.
+		String skillsFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//skillsTables.xlsx";
+		FileInputStream skillsInputStream = new FileInputStream(new File(skillsFilePath));
+		Workbook skillsWB = new XSSFWorkbook(skillsInputStream);
+		Sheet classSkillsTable = skillsWB.getSheetAt(0);
+		Iterator<Row> skillsIterator = classSkillsTable.iterator();
+
+		VBox vbSkillsCol1 = new VBox(8);
+		VBox vbSkillsCol2 = new VBox(8);
+
+		Label lSkills = new Label("Skills List: " + newChar.calcInitialSkillRanks() + " Skills Availible");
+
+		CheckBox cSkill = new CheckBox();
+		while (skillsIterator.hasNext()) {
+			Row nextRow = skillsIterator.next();
+			if (nextRow.getRowNum() > 1) {
+				Iterator<Cell> cellIterator = nextRow.cellIterator();
+				Cell skillCell = cellIterator.next();
+				cSkill = new CheckBox(skillCell.getStringCellValue());
+				if (skillCell.getRowIndex() < 20) {
+					vbSkillsCol1.getChildren().add(cSkill);
+				}
+				else {
+					vbSkillsCol2.getChildren().add(cSkill);
+				}
+
+				Cell isClassSkill = CellUtil.getCell(nextRow, newChar.cClass.skillTableCol);
+				if (isClassSkill.getStringCellValue().equals("C")) {
+					cSkill.setSelected(true);
+					cSkill.setDisable(true);
+				}
+				else {
+					cSkill.setSelected(false);
+				}
+			}
+			else {
+				continue;
+			}
+		}
+
+		try {
+			skillsWB.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			skillsInputStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Label lFeats = new Label("Feats");
+		ComboBox<String> cbFeats = new ComboBox<String>();
+		ArrayList<String> featsList = ExcelFileReaders.featReader();
+		cbFeats.getItems().addAll(featsList);
+		cbFeats.setVisibleRowCount(10);
+
+		HBox hbSkills = new HBox (vbSkillsCol1, vbSkillsCol2);
+		VBox vbAllSkills = new VBox(10, lSkills, hbSkills);
+		VBox vbFeats = new VBox (10, lFeats, cbFeats);
+		HBox hbSkillsAndFeats = new HBox (vbAllSkills, vbFeats);
+
+		Button bBack = new Button("Back");
+		Button bReset = new Button("Reset");
+		Button bNext = new Button("Next");
+		HBox hbButtons = new HBox(15, bBack, bReset, bNext);
+		VBox vbAllStage2 = new VBox(hbSkillsAndFeats, hbButtons);
+		hbButtons.setAlignment(Pos.CENTER);
+
+		Pane pane = new Pane(vbAllStage2);
+
+		Scene scene = new Scene(pane);
+	    Stage currentStage = new Stage();
+		currentStage.setTitle("Create New Character: Skills and Feats"); 	// Set title
+	    currentStage.setScene(scene); 								// Place the scene in the stage
+	    currentStage.show(); 										// Display the stage
+
+	    cSkill.setOnAction(e -> {
+	    	if (e.getSource() instanceof CheckBox) {
+	    		CheckBox cb = (CheckBox) e.getSource();
+	    		if (cb.isSelected()) {
+	    			newChar.applySkillRank();
+	    		}
+	    		else {
+	    			newChar.unApplySkillRank();
+	    		}
+	    	}
+	    	lSkills.setText("Skills List: " + newChar.getAvailibleSkillRanks() + " Skills Availible");
+	    });
+		bBack.setOnAction(e -> createNew1Of5(currentStage));			// Goes back to the opening stage
+	    bReset.setOnAction(e -> {										// Resets the current stage
+			try {
+				createNew2Of5(currentStage);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+	    bNext.setOnAction(new EventHandler<ActionEvent>() {			// Records all the information in newChar object and moves on to next method
+	    	@Override
+	    	public void handle(ActionEvent e) {
+	    		//Record the features needed by this stage.
+
+	    		createNew3Of5(currentStage);
+	    	}
+	    });
+
 		previousStage.close();
 	}
 
-	//Third Stage is for
+	//Third Stage is for equipment of all kinds.
 	private void createNew3Of5(Stage previousStage) {
 		previousStage.close();
+
+		Label lEquipCat = new Label("Choose an equipment category:");
+		ComboBox<String> cbEquipmentCategories = new ComboBox<String>();
+		cbEquipmentCategories.setItems(FXCollections.observableArrayList("Weapons", "Armor", "Shields", "Adventuring Gear", "Clothing",
+				"Food, Drink, & Lodging", "Tools & Skill Kits", "Transport, Mounts, & Related Gear", "Spellcasting & Services", "Special Substances & Items"));
+
+		ListView<String> lvEquipment = new ListView<String>();
+
+		Label lItemText = new Label("About This Item");
+		Label lWallet = new Label("Current Funds: " + newChar.getGP() + " gp");
+		Label lCarryCap = new Label("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
+		HBox hbCheckLabels = new HBox(10, lWallet, lCarryCap);
+		VBox vbItemLabels = new VBox(lItemText, hbCheckLabels);
+		TextArea taItemText = new TextArea();
+		taItemText.setWrapText(true);
+		taItemText.setPrefSize(200,200);
+		Button bPack = new Button("Pack");
+		Button bUnpack = new Button("Unpack");
+		VBox packAndUnpack = new VBox(vbItemLabels, taItemText, bPack, bUnpack);
+
+		HBox hbEquip = new HBox(cbEquipmentCategories, lvEquipment, packAndUnpack);
+
+		Button bBack = new Button("Back");
+		Button bReset = new Button("Reset");
+		Button bNext = new Button("Next");
+		HBox hbButtons = new HBox(15, bBack, bReset, bNext);
+		VBox vbAllStage2 = new VBox(hbEquip, hbButtons);
+		hbButtons.setAlignment(Pos.CENTER);
+
+		Pane pane = new Pane(vbAllStage2);
+
+		Scene scene = new Scene(pane);
+	    Stage currentStage = new Stage();
+		currentStage.setTitle("Create New Character: Equipment"); 	// Set title
+	    currentStage.setScene(scene); 								// Place the scene in the stage
+	    currentStage.show(); 										// Display the stage
+
+		bBack.setOnAction(e -> {
+			try {
+				createNew2Of5(currentStage);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+		});			// Goes back to the opening stage
+	    bReset.setOnAction(e -> {										// Resets the current stage
+			createNew3Of5(currentStage);
+		});
+	    bNext.setOnAction(new EventHandler<ActionEvent>() {			// Records all the information in newChar object and moves on to next method
+	    	@Override
+	    	public void handle(ActionEvent e) {
+	    		//Record the features needed by this stage.
+
+	    		createNew4Of5(currentStage);
+	    	}
+	    });
+
+	    cbEquipmentCategories.setOnAction(e -> {
+	    	try {
+				ObservableList<String> equipmentList = ExcelFileReaders.equipmentReader(cbEquipmentCategories.getSelectionModel().getSelectedIndex());
+				lvEquipment.setItems(equipmentList);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	    });
+
+	    lvEquipment.setOnMouseClicked(e -> {
+	    	try {
+	    		int sheetIndex = cbEquipmentCategories.getSelectionModel().getSelectedIndex();
+	    		int lvSelectionIndex = lvEquipment.getSelectionModel().getSelectedIndex();
+	    		if (sheetIndex == 0) {
+	    			taItemText.setText("I don't have the data reader for Weapons availible yet!");
+	    		}
+	    		else if (sheetIndex == 1) {
+	    			String itemData = ExcelFileReaders.equipmentArmorInfoReader(sheetIndex, lvSelectionIndex);
+	    			taItemText.setText(itemData);
+	    		}
+	    		else if (sheetIndex == 2) {
+	    			taItemText.setText("I don't have the data reader for Shields availible yet!");
+	    		}
+	    		else {
+	    			String itemData = ExcelFileReaders.equipmentGeneralInfoReader(sheetIndex, lvSelectionIndex);
+	    			taItemText.setText(itemData);
+	    		}
+	    		//
+	    	}
+	    	catch (IOException e2) {
+	    		// TODO Auto-generated catch block
+	    		e2.printStackTrace();
+	    	}
+	    });
+
+	    bPack.setOnAction(e -> {
+	    	int sheetIndex = cbEquipmentCategories.getSelectionModel().getSelectedIndex();
+    		int lvSelectionIndex = lvEquipment.getSelectionModel().getSelectedIndex();
+	    	try {
+	    		newChar.packItem(sheetIndex, lvSelectionIndex);
+	    		lWallet.setText("Current Funds: " + newChar.getGP() + " gp");
+	    		lCarryCap.setText("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
+	    	}
+	    	catch (IOException e1) {
+	    		e1.printStackTrace();
+	    	}
+	    });
 	}
 
-	//Fourth Stage is for magic (which could be skipped if irrelevant).
+	//Fourth Stage is for magic and other class powers (which could be skipped if irrelevant).
 	private void createNew4Of5(Stage previousStage) {
 		previousStage.close();
 	}
 
-	//Fifth and final stage is for equipment--weapons, armor, and other items.
-	private void createNew5Of5(Stage previousStage) {
-		previousStage.close();
-		//The format of the file's name should be CharacterName.Date
-		//DateFormat dateFormat = new SimpleDateFormat("_MM.dd.yyyy_HH.mm.ss");
-		//Date date = new Date();
-		//File saveFile = new File("C:\\Users\\Emma\\Desktop\\Pathfinder Character Sheets\\" + tfCharacterName.getText() + dateFormat.format(date) + ".txt");
-	}
 	private void updateOld(Stage previousStage) {
 		previousStage.close();
 		//Decide what to do next.
