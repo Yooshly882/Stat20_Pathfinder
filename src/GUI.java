@@ -1,14 +1,8 @@
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,7 +23,6 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -41,7 +34,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -191,6 +183,9 @@ public class GUI extends Application {
 		TextField tfAge = new TextField();
 		TextField tfHeight = new TextField();
 		TextField tfWeight = new TextField();
+		tfAge.setText(Integer.toString(0));
+		tfHeight.setText(Integer.toString(0) + "\'" + Integer.toString(0) + "\"");
+		tfWeight.setText(Integer.toString(0) + " lbs");
 		Button bRollAge = new Button("Roll For Me");
 		Button bRollHeight = new Button("Roll For Me");
 		Button bRollWeight = new Button("Roll For Me");
@@ -214,7 +209,7 @@ public class GUI extends Application {
 		GridPane gBaseStats = new GridPane();
 		gBaseStats.setHgap(10);
 		gBaseStats.setVgap(5);
-		gBaseStats.addRow(0, new Label(), new Label(), new Label("Bonus"), new Label("Total"));
+		gBaseStats.addRow(0, new Label(), new Label(), new Label("Bonus"), new Label("Total (Bonus + Stat Mod)"));
 		gBaseStats.addColumn(0, new Label("Strength:"), new Label("Dexterity:"), new Label("Constitution:"),
 				new Label("Intelligence:"), new Label("Wisdom:"), new Label("Charisma:"));
 		TextField tfStr = new TextField("0");
@@ -273,29 +268,27 @@ public class GUI extends Application {
 	    currentStage.show(); 										// Display the stage
 
 	    bBack.setOnAction(e -> openScreen(currentStage));			// Goes back to the opening stage
-	    bReset.setOnAction(e -> createNew1Of5(currentStage));		// Closes and reopens the stage
+	    bReset.setOnAction(e -> {createNew1Of5(currentStage); newChar = new Character();});		// Closes and reopens the stage
 	    bNext.setOnAction(new EventHandler<ActionEvent>() {			// Records all the information in newChar object and moves on to next method
 	    	@Override
 	    	public void handle(ActionEvent e) {
 	    		newChar.playerName = tfPlayerName.getText();
 	    		newChar.characterName = tfPlayerName.getText();
-	    		//Gender is already recorded by the radio button action bindings. Does not need to be re-recorded.
-	    		//newChar.gender = (String)genderGroup.getSelectedToggle().getUserData();
-	    		newChar.cRace.raceName = cbRace.getValue();
-	    		newChar.cClass.className = cbClass.getValue();
-	    		newChar.alignment = lLaw.getText() + lMoral.getText();
-	    		//THERE IS A PROBLEM RIGHT HERE THAT CRASHES MY MOVEMENT TO THE NEXT STAGE
-	    		/*
+
 	    		newChar.age = Integer.parseInt(tfAge.getText());
-	    		newChar.height = Integer.parseInt(tfHeight.getText());
-	    		newChar.weight = Integer.parseInt(tfWeight.getText());
-	    		*/
+	    		newChar.height = newChar.convertHeightStringToInt(tfHeight.getText());
+	    		newChar.weight = newChar.convertWeightStringToInt((tfWeight.getText()));
+
 	    		newChar.strength = Integer.parseInt(tfStr.getText());
 	    		newChar.dexterity = Integer.parseInt(tfDex.getText());
 	    		newChar.constitution = Integer.parseInt(tfCon.getText());
 	    		newChar.intelligence = Integer.parseInt(tfInt.getText());
 	    		newChar.wisdom = Integer.parseInt(tfWis.getText());
 	    		newChar.charisma = Integer.parseInt(tfCha.getText());
+
+	    		newChar.setCharacterRace(cbRace.getValue());
+	    		newChar.setCharacterClass(cbClass.getValue());
+	    		newChar.alignment = lLaw.getText() + lMoral.getText();
 
 	    		try {
 					createNew2Of5(currentStage);
@@ -315,7 +308,7 @@ public class GUI extends Application {
 				newChar.weight = 0;
 				tfAge.setText(Integer.toString(newChar.age));
 				tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-				tfWeight.setText(Integer.toString(newChar.weight));
+				tfWeight.setText(Integer.toString(newChar.weight) + " lbs");
 			}
 	    });
 	    rbFemale.setOnAction(new EventHandler<ActionEvent>() {
@@ -327,91 +320,92 @@ public class GUI extends Application {
 				newChar.weight = 0;
 				tfAge.setText(Integer.toString(newChar.age));
 				tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-				tfWeight.setText(Integer.toString(newChar.weight));
+				tfWeight.setText(Integer.toString(newChar.weight) + " lbs");
 			}
 	    });
 	    cbRace.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 	    		if (cbRace.getValue() == "Human") {
-	    			newChar.cRace.setRace("Human");
-	    			taRaceText.setText(newChar.cRace.getRaceBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
+	    			newChar.cRace.setRaceHuman();
 	    		}
 	    		else if (cbRace.getValue() == "Elf") {
-	    			newChar.cRace.setRace("Elf");
-	    			taRaceText.setText(newChar.cRace.getRaceBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
+	    			newChar.cRace.setRaceElf();
 	    		}
 	    		else if (cbRace.getValue() == "Dwarf") {
-	    			newChar.cRace.setRace("Dwarf");
-	    			taRaceText.setText(newChar.cRace.getRaceBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
+	    			newChar.cRace.setRaceDwarf();
 	    		}
+	    		else if (cbRace.getValue() == "Gnome") {
+	    			newChar.cRace.setRaceGnome();
+	    		}
+	    		else if (cbRace.getValue() == "Half-Elf") {
+	    			newChar.cRace.setRaceHalfElf();
+	    		}
+	    		else if (cbRace.getValue() == "Half-Orc") {
+	    			newChar.cRace.setRaceHalfOrc();
+	    		}
+	    		else if (cbRace.getValue() == "Halfling") {
+	    			newChar.cRace.setRaceHalfling();
+	    		}
+	    		taRaceText.setText(newChar.cRace.getRaceBlurb());
+	    		newChar.age = 0;
+				newChar.height = 0;
+				newChar.weight = 0;
+				tfAge.setText(Integer.toString(0));
+				tfHeight.setText(Integer.toString(0) + "\'" + Integer.toString(0) + "\"");
+				tfWeight.setText(Integer.toString(0) + " lbs");
 			}
 	    });
 	    cbClass.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 	    	public void handle(ActionEvent e) {
-	    		if (cbClass.getValue() == "Barbarian") {
-	    			newChar.cClass.setClass("Barbarian");
-	    		}
-	    		else if (cbClass.getValue() == "Bard") {
-	    			newChar.cClass.setClass("Bard");
-	    			taClassText.setText(newChar.cClass.getClassBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
-	    		}
-	    		else if (cbClass.getValue() == "Paladin") {
-	    			newChar.cClass.setClass("Paladin");
-	    			taClassText.setText(newChar.cClass.getClassBlurb());
-	    			newChar.age = 0;
-					newChar.height = 0;
-					newChar.weight = 0;
-					tfAge.setText(Integer.toString(newChar.age));
-					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
-					tfWeight.setText(Integer.toString(newChar.weight));
-	    		}
+	    		newChar.cClass.setClass(cbClass.getValue());
+	    		taClassText.setText(newChar.cClass.getClassBlurb());
+    			newChar.age = 0;
+				newChar.height = 0;
+				newChar.weight = 0;
+				tfAge.setText(Integer.toString(newChar.age));
+				tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) + "\"");
+				tfWeight.setText(Integer.toString(newChar.weight) + " lbs");
 	    	}
 	    });
 	    bRollAge.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 	    	public void handle(ActionEvent e) {
-				newChar.rollAge();
-				tfAge.setText(Integer.toString(newChar.age));
+				try {
+					newChar.rollAge();
+					tfAge.setText(Integer.toString(newChar.age));
+				}
+				catch (NullPointerException n) {
+					System.out.println("Error: Class and/or Race not selected!");
+					n.printStackTrace();
+				}
 			}
 	    });
 	    bRollHeight.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 	    	public void handle(ActionEvent e) {
-				newChar.rollHeight();
-				tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) +"\"");
+				try {
+					newChar.rollHeight();
+					tfHeight.setText(Integer.toString(newChar.height / 12) + "\'" + Integer.toString(newChar.height % 12) +"\"");
+				}
+				catch (NullPointerException n) {
+					System.out.println("Error: Race and/or Gender not selected!");
+					n.printStackTrace();
+				}
 			}
 	    });
 	    bRollWeight.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 	    	public void handle(ActionEvent e) {
-				newChar.rollWeight();
-				tfWeight.setText(Integer.toString(newChar.weight));
+				try {
+					newChar.rollWeight();
+					tfWeight.setText(Integer.toString(newChar.weight) + " lbs");
+				}
+				catch (NullPointerException n) {
+					System.out.println("Error: Race and/or Gender not selected!");
+					n.printStackTrace();
+				}
 			}
 	    });
 	    bRollBaseStats.setOnAction(new EventHandler<ActionEvent>() {
@@ -423,6 +417,20 @@ public class GUI extends Application {
 	    		tfInt.setText(Integer.toString(newChar.rollBaseStats()));
 	    		tfWis.setText(Integer.toString(newChar.rollBaseStats()));
 	    		tfCha.setText(Integer.toString(newChar.rollBaseStats()));
+
+	    		lStrBonus.setText("+ " + newChar.cRace.strBonus);
+	    		lDexBonus.setText("+ " + newChar.cRace.dexBonus);
+	    		lConBonus.setText("+ " + newChar.cRace.conBonus);
+	    		lIntBonus.setText("+ " + newChar.cRace.intBonus);
+	    		lWisBonus.setText("+ " + newChar.cRace.wisBonus);
+	    		lChaBonus.setText("+ " + newChar.cRace.chaBonus);
+
+	    		lStrTotal.setText(String.valueOf(Integer.parseInt(tfStr.getText()) + newChar.cRace.strBonus));
+	    		lDexTotal.setText(String.valueOf(Integer.parseInt(tfDex.getText()) + newChar.cRace.dexBonus));
+	    		lConTotal.setText(String.valueOf(Integer.parseInt(tfCon.getText()) + newChar.cRace.conBonus));
+	    		lIntTotal.setText(String.valueOf(Integer.parseInt(tfInt.getText()) + newChar.cRace.intBonus));
+	    		lWisTotal.setText(String.valueOf(Integer.parseInt(tfWis.getText()) + newChar.cRace.wisBonus));
+	    		lChaTotal.setText(String.valueOf(Integer.parseInt(tfCha.getText()) + newChar.cRace.chaBonus));
 	    	}
 	    });
 	}
@@ -445,7 +453,7 @@ public class GUI extends Application {
 		VBox vbSkillsCol1 = new VBox(8);
 		VBox vbSkillsCol2 = new VBox(8);
 
-		Label lSkills = new Label("Skills List: " + newChar.calcInitialSkillRanks() + " Skills Availible");
+		Label lSkills = new Label("Skills List: " + newChar.getAvailibleSkillRanks() + " Skills Availible");
 
 		CheckBox cSkill = new CheckBox();
 		while (skillsIterator.hasNext()) {
@@ -453,7 +461,31 @@ public class GUI extends Application {
 			if (nextRow.getRowNum() > 1) {
 				Iterator<Cell> cellIterator = nextRow.cellIterator();
 				Cell skillCell = cellIterator.next();
-				cSkill = new CheckBox(skillCell.getStringCellValue());
+				String skillModType = CellUtil.getCell(nextRow, 2).getStringCellValue();
+				int modifier = newChar.calcModifier(newChar.getBaseStat(skillModType));
+				cSkill = new CheckBox(skillCell.getStringCellValue() + " + " + modifier);
+
+				cSkill.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			    	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+			    		if (observable.getValue()) {
+			    			newChar.applySkillRank();
+			    		}
+			    		else {
+			    			newChar.unApplySkillRank();
+			    		}
+			    		lSkills.setText("Skills List: " + newChar.getAvailibleSkillRanks() + " Skills Availible");
+			    	}
+			    });
+
+				Cell isClassSkill = CellUtil.getCell(nextRow, newChar.cClass.skillTableCol);
+				if (isClassSkill.getStringCellValue().equals("C")) {
+					//cSkill.setSelected(true);
+					//cSkill.setDisable(true);
+				}
+				else {
+					//cSkill.setSelected(false);
+				}
+
 				if (skillCell.getRowIndex() < 20) {
 					vbSkillsCol1.getChildren().add(cSkill);
 				}
@@ -461,14 +493,6 @@ public class GUI extends Application {
 					vbSkillsCol2.getChildren().add(cSkill);
 				}
 
-				Cell isClassSkill = CellUtil.getCell(nextRow, newChar.cClass.skillTableCol);
-				if (isClassSkill.getStringCellValue().equals("C")) {
-					cSkill.setSelected(true);
-					cSkill.setDisable(true);
-				}
-				else {
-					cSkill.setSelected(false);
-				}
 			}
 			else {
 				continue;
@@ -493,6 +517,9 @@ public class GUI extends Application {
 		ArrayList<String> featsList = ExcelFileReaders.featReader();
 		cbFeats.getItems().addAll(featsList);
 		cbFeats.setVisibleRowCount(10);
+		TextArea taFeatsDesc = new TextArea();
+		taFeatsDesc.setWrapText(true);
+		taFeatsDesc.setPrefSize(200, 200);
 
 		HBox hbSkills = new HBox (vbSkillsCol1, vbSkillsCol2);
 		VBox vbAllSkills = new VBox(10, lSkills, hbSkills);
@@ -514,18 +541,6 @@ public class GUI extends Application {
 	    currentStage.setScene(scene); 								// Place the scene in the stage
 	    currentStage.show(); 										// Display the stage
 
-	    cSkill.setOnAction(e -> {
-	    	if (e.getSource() instanceof CheckBox) {
-	    		CheckBox cb = (CheckBox) e.getSource();
-	    		if (cb.isSelected()) {
-	    			newChar.applySkillRank();
-	    		}
-	    		else {
-	    			newChar.unApplySkillRank();
-	    		}
-	    	}
-	    	lSkills.setText("Skills List: " + newChar.getAvailibleSkillRanks() + " Skills Availible");
-	    });
 		bBack.setOnAction(e -> createNew1Of5(currentStage));			// Goes back to the opening stage
 	    bReset.setOnAction(e -> {										// Resets the current stage
 			try {
@@ -535,13 +550,11 @@ public class GUI extends Application {
 				e1.printStackTrace();
 			}
 		});
-	    bNext.setOnAction(new EventHandler<ActionEvent>() {			// Records all the information in newChar object and moves on to next method
-	    	@Override
-	    	public void handle(ActionEvent e) {
-	    		//Record the features needed by this stage.
+	    bNext.setOnAction(e -> {
+	    	//Record the features needed by this stage.
 
-	    		createNew3Of5(currentStage);
-	    	}
+
+	    	createNew3Of5(currentStage);
 	    });
 
 		previousStage.close();
@@ -561,16 +574,20 @@ public class GUI extends Application {
 		Label lItemText = new Label("About This Item");
 		Label lWallet = new Label("Current Funds: " + newChar.getGP() + " gp");
 		Label lCarryCap = new Label("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
-		HBox hbCheckLabels = new HBox(10, lWallet, lCarryCap);
-		VBox vbItemLabels = new VBox(lItemText, hbCheckLabels);
+		VBox vbItemLabels = new VBox(10, lItemText, lWallet, lCarryCap);
+
 		TextArea taItemText = new TextArea();
 		taItemText.setWrapText(true);
 		taItemText.setPrefSize(200,200);
+
 		Button bPack = new Button("Pack");
 		Button bUnpack = new Button("Unpack");
-		VBox packAndUnpack = new VBox(vbItemLabels, taItemText, bPack, bUnpack);
+		HBox hbPackAndUnpack = new HBox(bPack, bUnpack);
+		hbPackAndUnpack.setAlignment(Pos.CENTER);
 
-		HBox hbEquip = new HBox(cbEquipmentCategories, lvEquipment, packAndUnpack);
+		VBox vbPackArea = new VBox(vbItemLabels, taItemText, hbPackAndUnpack);
+
+		HBox hbEquip = new HBox(10, cbEquipmentCategories, lvEquipment, vbPackArea);
 
 		Button bBack = new Button("Back");
 		Button bReset = new Button("Reset");
@@ -606,7 +623,6 @@ public class GUI extends Application {
 	    		createNew4Of5(currentStage);
 	    	}
 	    });
-
 	    cbEquipmentCategories.setOnAction(e -> {
 	    	try {
 				ObservableList<String> equipmentList = ExcelFileReaders.equipmentReader(cbEquipmentCategories.getSelectionModel().getSelectedIndex());
@@ -616,7 +632,6 @@ public class GUI extends Application {
 				e1.printStackTrace();
 			}
 	    });
-
 	    lvEquipment.setOnMouseClicked(e -> {
 	    	try {
 	    		int sheetIndex = cbEquipmentCategories.getSelectionModel().getSelectedIndex();
@@ -642,7 +657,6 @@ public class GUI extends Application {
 	    		e2.printStackTrace();
 	    	}
 	    });
-
 	    bPack.setOnAction(e -> {
 	    	int sheetIndex = cbEquipmentCategories.getSelectionModel().getSelectedIndex();
     		int lvSelectionIndex = lvEquipment.getSelectionModel().getSelectedIndex();
@@ -650,6 +664,18 @@ public class GUI extends Application {
 	    		newChar.packItem(sheetIndex, lvSelectionIndex);
 	    		lWallet.setText("Current Funds: " + newChar.getGP() + " gp");
 	    		lCarryCap.setText("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
+	    	}
+	    	catch (IOException e1) {
+	    		e1.printStackTrace();
+	    	}
+	    });
+	    bUnpack.setOnAction(e -> {
+	    	int sheetIndex = cbEquipmentCategories.getSelectionModel().getSelectedIndex();
+	    	int lvSelectionIndex = lvEquipment.getSelectionModel().getSelectedIndex();
+	    	try {
+	    		newChar.unpackItem(sheetIndex, lvSelectionIndex);
+	    		lWallet.setText("Current Funds: " + newChar.getGP() + " gp");
+	    		lCarryCap.setText("Current Carrying capacity: " + newChar.getCarryCap() + " lbs");
 	    	}
 	    	catch (IOException e1) {
 	    		e1.printStackTrace();

@@ -1,9 +1,6 @@
-import java.awt.List;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.apache.poi.ss.usermodel.Cell;
@@ -43,7 +40,7 @@ public abstract class ExcelFileReaders {
 						switch (prereqCell.getColumnIndex()) {
 						//class features
 						case 2: //System.out.println("Does this character have the " +prereqCell.getStringCellValue()+ " class feature?");
-						if (Character.cClass.classFeatures.contains(prereqCell.getStringCellValue())) {
+						if (Character.cClass.initialClassFeatures.contains(prereqCell.getStringCellValue())) {
 							featList.add(prereqCell.getStringCellValue());
 							//System.out.println("You have the " + currentFeat.getStringCellValue() + " feat available, because you have the " + prereqCell.getStringCellValue() + " prerequisite.");
 						} break;
@@ -104,6 +101,27 @@ public abstract class ExcelFileReaders {
 		}
 		equipWB.close();
 		return equipmentList;
+	}
+	public static String getEquipmentName(int categorySheet, int listRowIndex) throws IOException {
+		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
+		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		Workbook equipWB = new XSSFWorkbook(equipInputStream);
+		Sheet equipTable = equipWB.getSheetAt(categorySheet);
+		int rowIndex = 2;
+
+		String equipmentName = null;
+
+		if (categorySheet == 0) {
+			equipmentName = CellUtil.getCell(equipTable.getRow(rowIndex), 2).getStringCellValue();
+		}
+		else if (categorySheet == 1) {
+			equipmentName = CellUtil.getCell(equipTable.getRow(rowIndex), 1).getStringCellValue();
+		}
+		else {
+			equipmentName = CellUtil.getCell(equipTable.getRow(rowIndex), 0).getStringCellValue();
+		}
+		equipWB.close();
+		return equipmentName;
 	}
 	public static String equipmentGeneralInfoReader(int categorySheet, int listRowIndex) throws IOException {
 		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
@@ -243,7 +261,7 @@ public abstract class ExcelFileReaders {
 		equipWB.close();
 		return itemWeight;
 	}
-	public static String getItemInfoAddress(int rowIndex, int sheet) throws IOException {
+	public static String getItemInfoAddress(int sheet, int rowIndex) throws IOException {
 		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
 		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
