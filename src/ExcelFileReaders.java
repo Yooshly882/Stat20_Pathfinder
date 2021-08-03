@@ -15,10 +15,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public abstract class ExcelFileReaders {
+	static String featsTableFile = "./src/excelData/featsTables.xlsx";
+	static String skillsTableFile = "./src/excelData/skillsTables.xlsx";
+	static String equipmentTableFile = "./src/excelData/equipmentTables.xlsx";
 
 	public static ArrayList<String> featReader() throws IOException {
-		String featsFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//featsTables.xlsx";
-		FileInputStream featsInputStream = new FileInputStream(new File(featsFilePath));
+		FileInputStream featsInputStream = new FileInputStream(new File(featsTableFile));
 		Workbook featsWB = new XSSFWorkbook(featsInputStream);
 		Sheet featsTable = featsWB.getSheetAt(0);
 		Iterator<Row> featsIterator = featsTable.iterator();
@@ -69,8 +71,7 @@ public abstract class ExcelFileReaders {
 	}
 
 	public static ObservableList<String> equipmentReader(int categorySheet) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(categorySheet);
 		int rowIndex = 2;
@@ -103,8 +104,7 @@ public abstract class ExcelFileReaders {
 		return equipmentList;
 	}
 	public static String getEquipmentName(int categorySheet, int listRowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(categorySheet);
 		int rowIndex = 2;
@@ -124,8 +124,7 @@ public abstract class ExcelFileReaders {
 		return equipmentName;
 	}
 	public static String equipmentGeneralInfoReader(int categorySheet, int listRowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(categorySheet);
 		//Where the index of the selection from the ListView is 0, the corresponding row in the file will be 2.
@@ -147,8 +146,7 @@ public abstract class ExcelFileReaders {
 		return formattedOutput;
 	}
 	public static String equipmentArmorInfoReader(int categorySheet, int listRowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet armorTable = equipWB.getSheetAt(categorySheet);
 
@@ -192,8 +190,7 @@ public abstract class ExcelFileReaders {
 		//Takes a (selected) weapon info row and puts it into a form parseable by a text area.
 	}
 	public static double getItemCost(int sheet, int rowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(sheet);
 		Row row = equipTable.getRow(rowIndex);
@@ -239,8 +236,7 @@ public abstract class ExcelFileReaders {
 		return finalItemCost;
 	}
 	public static double getItemWeight(int sheet, int rowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(sheet);
 		Row row = equipTable.getRow(rowIndex);
@@ -262,8 +258,7 @@ public abstract class ExcelFileReaders {
 		return itemWeight;
 	}
 	public static String getItemInfoAddress(int sheet, int rowIndex) throws IOException {
-		String equipFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//equipmentTables.xlsx";
-		FileInputStream equipInputStream = new FileInputStream(new File(equipFilePath));
+		FileInputStream equipInputStream = new FileInputStream(new File(equipmentTableFile));
 		Workbook equipWB = new XSSFWorkbook(equipInputStream);
 		Sheet equipTable = equipWB.getSheetAt(sheet);
 		Row row = equipTable.getRow(rowIndex);

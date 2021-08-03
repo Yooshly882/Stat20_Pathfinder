@@ -27,3 +27,61 @@ Launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe
 Launcher args:	-jar "C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\Stat20EXE.exe"
 Args length:	84/32768 chars
 Exit code:	0
+
+
+Version:	3.14
+CmdLine:	C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\Stat20EXE.exe --l4j-debug
+WOW64:		yes
+Working dir:	C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\.
+Java min ver:	1.004.000
+Java max ver:	
+64-bit search:	SOFTWARE\JavaSoft\Java Runtime Environment...
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8
+Check launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe (OK)
+Match:		1.008.000
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8.0_211
+Check launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe (OK)
+Match:		1.008.000_211
+64-bit search:	SOFTWARE\JavaSoft\Java Development Kit...
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8
+Ignore:		1.008.000
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8.0_152
+Ignore:		1.008.000_152
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8.0_161
+Ignore:		1.008.000_161
+64-bit search:	SOFTWARE\JavaSoft\JRE...
+64-bit search:	SOFTWARE\JavaSoft\JDK...
+Runtime used:	1.008.000_211 (64-bit)
+Launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe
+Launcher args:	-jar "C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\Stat20EXE.exe"
+Args length:	84/32768 chars
+Exit code:	0
+
+
+Version:	3.14
+CmdLine:	C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\Stat20EXE.exe --l4j-debug
+WOW64:		yes
+Working dir:	C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\.
+Java min ver:	1.004.000
+Java max ver:	
+64-bit search:	SOFTWARE\JavaSoft\Java Runtime Environment...
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8
+Check launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe (OK)
+Match:		1.008.000
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8.0_211
+Check launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe (OK)
+Match:		1.008.000_211
+64-bit search:	SOFTWARE\JavaSoft\Java Development Kit...
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8
+Ignore:		1.008.000
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8.0_152
+Ignore:		1.008.000_152
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8.0_161
+Ignore:		1.008.000_161
+64-bit search:	SOFTWARE\JavaSoft\JRE...
+64-bit search:	SOFTWARE\JavaSoft\JDK...
+Runtime used:	1.008.000_211 (64-bit)
+Launcher:	C:\Program Files\Java\jre1.8.0_211\bin\javaw.exe
+Launcher args:	-jar "C:\Users\Emma\Java Workspaces\Personal\Tabletop RPG Project 2.0\Stat20EXE.exe"
+Args length:	84/32768 chars
+Exit code:	0

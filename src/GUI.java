@@ -444,8 +444,7 @@ public class GUI extends Application {
 		// Firstly, the skills list.
 		// At the top should be a centered header, "Welcome, [character name], the brave [race][class]!
 		// Then there should be a dynamic ticker that keeps track of how many class skills (and feats) the player has left to select.
-		String skillsFilePath = "C://Users//Emma//Java Workspaces//Personal//Tabletop RPG Project 2.0//src//excelData//skillsTables.xlsx";
-		FileInputStream skillsInputStream = new FileInputStream(new File(skillsFilePath));
+		FileInputStream skillsInputStream = new FileInputStream(new File("./src/excelData/skillsTables.xlsx"));
 		Workbook skillsWB = new XSSFWorkbook(skillsInputStream);
 		Sheet classSkillsTable = skillsWB.getSheetAt(0);
 		Iterator<Row> skillsIterator = classSkillsTable.iterator();
