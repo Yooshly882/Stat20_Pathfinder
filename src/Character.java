@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Character {
@@ -25,7 +26,9 @@ public class Character {
 	int availibleSkillRanks = 0;
 	String[] languages = new String[]{"Common"};
 	double gp = 0;
-	int carryCap;
+	int burden = 0;
+	int[] carryCap = new int[3];
+	String burdenCategory;
 	ArrayList<String> itemAddresses = new ArrayList<String>();
 
 	public Character() {
@@ -195,8 +198,81 @@ public class Character {
 		}
 		return this.gp;
 	}
+	public void setCarryCap() {
+		//This method will return the light, medium, and heavy load for each possible strength score.
+		switch(this.strength) {
+		case 1: carryCap = new int[]{3, 6, 10}; break;
+		case 2: carryCap = new int[]{6, 13, 20}; break;
+		case 3: carryCap = new int[]{10, 20, 30}; break;
+		case 4: carryCap = new int[]{13, 26, 40}; break;
+		case 5: carryCap = new int[]{16, 33, 50}; break;
+		case 6: carryCap = new int[]{20, 40, 60}; break;
+		case 7: carryCap = new int[]{23, 46, 70}; break;
+		case 8: carryCap = new int[]{26, 53, 80}; break;
+		case 9: carryCap = new int[]{30, 60, 90}; break;
+		case 10: carryCap = new int[]{33, 66, 100}; break;
+		case 11: carryCap = new int[]{38, 76, 115}; break;
+		case 12: carryCap = new int[]{43, 86, 130}; break;
+		case 13: carryCap = new int[]{50, 100, 150}; break;
+		case 14: carryCap = new int[]{58, 116, 175}; break;
+		case 15: carryCap = new int[]{66, 133, 200}; break;
+		case 16: carryCap = new int[]{76, 153, 230}; break;
+		case 17: carryCap = new int[]{86, 173, 260}; break;
+		case 18: carryCap = new int[]{100, 200, 300}; break;
+		default: throw new NullPointerException();
+		}
+	}
 	public int getCarryCap() {
-		return this.carryCap;
+		int limit = 0;
+		if (this.burdenCategory.equals("light")) {
+			limit = carryCap[0];
+		}
+		else if (this.burdenCategory.equals("medium")) {
+			limit = carryCap[1];
+		}
+		else if (this.burdenCategory.equals("heavy")) {
+			limit = carryCap[2];
+		}
+		return limit;
+	}
+	public void addBurden(double itemWeight) {
+		String burdenCategory = null;
+		if (this.burden + itemWeight <= carryCap[0]) {
+			//the character still has a 'light' burden
+			this.burden += itemWeight;
+			this.burdenCategory = "light";
+		}
+		else if (this.burden + itemWeight <= carryCap[1]) {
+			//the character now has a 'medium' burden
+			this.burden += itemWeight;
+			this.burdenCategory = "medium";
+		}
+		else if (this.burden + itemWeight <= carryCap[2]) {
+			//the character has a 'heavy' burden
+			this.burden += itemWeight;
+			this.burdenCategory = "heavy";
+		}
+		else if (this.burden + itemWeight > carryCap[2]) {
+			//the character has a greater-than-heavy burden--this is disallowed
+		}
+	}
+	public void removeBurden(double itemWeight) {
+		String burdenCategory = null;
+		if (this.burden - itemWeight < carryCap[0]) {
+			//the character has a 'light' burden
+			this.burden -= itemWeight;
+			this.burdenCategory = "light";
+		}
+		else if (this.burden - itemWeight < carryCap[1]) {
+			//the character has a 'medium' burden
+			this.burden -= itemWeight;
+			this.burdenCategory = "medium";
+		}
+		else if (this.burden - itemWeight < carryCap[2]) {
+			//the character has a 'heavy' burden
+			this.burden -= itemWeight;
+			this.burdenCategory = "heavy";
+		}
 	}
 	public void packItem(int sheet, int selectionIndex) throws IOException {
 
@@ -204,17 +280,19 @@ public class Character {
 		double itemCost = ExcelFileReaders.getItemCost(sheet, rowIndex);
 		double itemWeight = ExcelFileReaders.getItemWeight(sheet, rowIndex);
 
-		if (this.getGP() >= itemCost /*&& this.getCarryCap >= weight*/) {
+		if (this.getGP() >= itemCost && this.carryCap[2] >= (itemWeight + this.burden)) {
 			this.itemAddresses.add(ExcelFileReaders.getItemInfoAddress(sheet, rowIndex));
 			this.gp -= itemCost;
-			this.carryCap -= itemWeight;
+			addBurden(itemWeight);
+
 		}
 		else if (this.getGP() < itemCost) {
 			System.out.println("Not enough money!");
 		}
-		else if (this.getCarryCap() < itemWeight) {
+		else if (this.carryCap[2] < itemWeight + this.burden) {
 			System.out.println("Too weak!");
 		}
+
 	}
 	public void unpackItem(int sheet, int selectionIndex) throws IOException {
 		int rowIndex = selectionIndex + 2;
@@ -224,7 +302,7 @@ public class Character {
 		if (this.itemAddresses.contains(ExcelFileReaders.getItemInfoAddress(sheet, rowIndex))) {
 			this.itemAddresses.remove(ExcelFileReaders.getItemInfoAddress(sheet, rowIndex));
 			this.gp += itemCost;
-			this.carryCap += itemWeight;
+			removeBurden(itemWeight);
 		}
 		else {
 			System.out.println("Cannot remove; that item is not in your inventory!");

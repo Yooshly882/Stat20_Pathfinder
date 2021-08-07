@@ -286,6 +286,8 @@ public class GUI extends Application {
 	    		newChar.wisdom = Integer.parseInt(tfWis.getText());
 	    		newChar.charisma = Integer.parseInt(tfCha.getText());
 
+	    		newChar.setCarryCap();
+
 	    		newChar.setCharacterRace(cbRace.getValue());
 	    		newChar.setCharacterClass(cbClass.getValue());
 	    		newChar.alignment = lLaw.getText() + lMoral.getText();
@@ -572,7 +574,8 @@ public class GUI extends Application {
 
 		Label lItemText = new Label("About This Item");
 		Label lWallet = new Label("Current Funds: " + newChar.getGP() + " gp");
-		Label lCarryCap = new Label("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
+		//Current Burden (light/medium/heavy): xlbs of y limit
+		Label lCarryCap = new Label("Current Burden (light): " + newChar.burden + "lbs of " + newChar.carryCap[0] + "lb limit");
 		VBox vbItemLabels = new VBox(10, lItemText, lWallet, lCarryCap);
 
 		TextArea taItemText = new TextArea();
@@ -662,7 +665,7 @@ public class GUI extends Application {
 	    	try {
 	    		newChar.packItem(sheetIndex, lvSelectionIndex);
 	    		lWallet.setText("Current Funds: " + newChar.getGP() + " gp");
-	    		lCarryCap.setText("Current Carrying Capacity: " + newChar.getCarryCap() + " lbs");
+	    		lCarryCap.setText("Current Burden ("+ newChar.burdenCategory +") : " + newChar.burden + "lbs of " + newChar.getCarryCap() + "lb limit");
 	    	}
 	    	catch (IOException e1) {
 	    		e1.printStackTrace();
@@ -674,7 +677,7 @@ public class GUI extends Application {
 	    	try {
 	    		newChar.unpackItem(sheetIndex, lvSelectionIndex);
 	    		lWallet.setText("Current Funds: " + newChar.getGP() + " gp");
-	    		lCarryCap.setText("Current Carrying capacity: " + newChar.getCarryCap() + " lbs");
+	    		lCarryCap.setText("Current Burden ("+ newChar.burdenCategory +") : " + newChar.burden + "lbs of " + newChar.getCarryCap() + "lb limit");
 	    	}
 	    	catch (IOException e1) {
 	    		e1.printStackTrace();
